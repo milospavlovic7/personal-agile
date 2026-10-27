@@ -1,0 +1,135 @@
+{
+  "tasks": [
+    {
+      "id": "task-1",
+      "description": "Initialize git repository & setup basic package structural folders",
+      "categoryId": "cat-dev",
+      "subcategoryId": "sub-dev-core",
+      "sprintWeek": "2026-W20",
+      "status": "done",
+      "priority": 3,
+      "notes": "Basic setup complete. Ready to implement visual system layers.",
+      "createdAt": "2026-05-14T10:00:00.000Z",
+      "updatedAt": "2026-05-14T12:00:00.000Z",
+      "effort": "S"
+    },
+    {
+      "id": "task-2",
+      "description": "Refactor core observer store for file-less CORS compatibility",
+      "categoryId": "cat-dev",
+      "subcategoryId": "sub-dev-core",
+      "sprintWeek": "2026-W20",
+      "status": "in_progress",
+      "priority": 1,
+      "notes": "Need to make sure state binds cleanly using UMD modules without ESM issues on standard double-click runs.",
+      "createdAt": "2026-05-15T09:00:00.000Z",
+      "updatedAt": "2026-05-21T14:00:00.000Z",
+      "effort": "M",
+      "subtasks": [
+        { "id": "st-1", "text": "Create local observer pattern", "done": true },
+        { "id": "st-2", "text": "Map custom selector hook triggers", "done": false }
+      ]
+    },
+    {
+      "id": "task-3",
+      "description": "Design glassy Matte Graphite layout layout grid system",
+      "categoryId": "cat-dev",
+      "subcategoryId": "sub-dev-ui",
+      "sprintWeek": "2026-W21",
+      "status": "in_progress",
+      "priority": 2,
+      "notes": "Dark matte tones (#09090b / #15151b). Minimalistic aesthetic vibes inspired by Linear & Obsidian.",
+      "createdAt": "2026-05-18T08:00:00.000Z",
+      "updatedAt": "2026-05-21T14:15:00.000Z",
+      "effort": "L",
+      "pinned": true
+    },
+    {
+      "id": "task-4",
+      "description": "Code dynamic inline task fast-capture fields (+ Enter to save)",
+      "categoryId": "cat-dev",
+      "subcategoryId": "sub-dev-ui",
+      "sprintWeek": "2026-W21",
+      "status": "tasks",
+      "priority": 3,
+      "notes": "Quick add makes task flow frictionless.",
+      "createdAt": "2026-05-19T11:00:00.000Z",
+      "updatedAt": "2026-05-19T11:00:00.000Z",
+      "effort": "S"
+    },
+    {
+      "id": "task-5",
+      "description": "Generate 5 customized synth presets for future sci-fi ambient album",
+      "categoryId": "cat-mus",
+      "subcategoryId": "sub-mus-sd",
+      "sprintWeek": "2026-W21",
+      "status": "in_progress",
+      "priority": 2,
+      "notes": "Using Vital synth. Focus on deep atmospheric pads and futuristic granular hits.",
+      "createdAt": "2026-05-20T14:30:00.000Z",
+      "updatedAt": "2026-05-21T14:20:00.000Z",
+      "effort": "M"
+    },
+    {
+      "id": "task-6",
+      "description": "Heavy legs day: squat training routine focus (5x5)",
+      "categoryId": "cat-self",
+      "subcategoryId": "sub-self-train",
+      "sprintWeek": "2026-W21",
+      "status": "done",
+      "priority": 3,
+      "notes": "Hit target squat volume! Form was solid.",
+      "createdAt": "2026-05-21T07:00:00.000Z",
+      "updatedAt": "2026-05-21T08:30:00.000Z",
+      "effort": "S"
+    },
+    {
+      "id": "task-b1",
+      "description": "Investigate Figma mockups for next year's full procedural puzzle game",
+      "categoryId": "cat-dev",
+      "subcategoryId": "sub-dev-ui",
+      "sprintWeek": null,
+      "status": "backlog",
+      "priority": 4,
+      "notes": "Just rough sketching for now. Keep in backlog.",
+      "createdAt": "2026-05-18T16:00:00.000Z",
+      "updatedAt": "2026-05-18T16:00:00.000Z",
+      "effort": "XL"
+    },
+    {
+      "id": "task-b2",
+      "description": "Read 'Atomic Habits' chapter on environmental design setups",
+      "categoryId": "cat-self",
+      "subcategoryId": "sub-self-read",
+      "sprintWeek": null,
+      "status": "backlog",
+      "priority": null,
+      "createdAt": "2026-05-18T17:00:00.000Z",
+      "updatedAt": "2026-05-18T17:00:00.000Z",
+      "effort": "XS"
+    }
+  ],
+  "categories": [
+    { "id": "cat-dev", "name": "Engineering", "color": "#8b5cf6", "order": 0 },
+    { "id": "cat-mus", "name": "Music Production", "color": "#10b981", "order": 1 },
+    { "id": "cat-self", "name": "Self-Refining", "color": "#f59e0b", "order": 2 }
+  ],
+  "subcategories": {
+    "cat-dev": [
+      { "id": "sub-dev-core", "name": "Core Engine", "order": 0 },
+      { "id": "sub-dev-ui", "name": "UI Design", "order": 1 }
+    ],
+    "cat-mus": [
+      { "id": "sub-mus-beat", "name": "Arranging", "order": 0 },
+      { "id": "sub-mus-sd", "name": "Sound Design", "order": 1 }
+    ],
+    "cat-self": [
+      { "id": "sub-self-train", "name": "Fitness & Training", "order": 0 },
+      { "id": "sub-self-read", "name": "Reading List", "order": 1 }
+    ]
+  },
+  "selectedWeek": "2026-W21",
+  "dailyFocus": ["task-2", "task-3"],
+  "collapsedCategories": [],
+  "collapsedSubcategories": []
+}

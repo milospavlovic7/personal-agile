@@ -1,0 +1,46 @@
+{
+  "tasks": [],
+  "categories": [],
+  "subcategories": {
+    "cat-dev": [
+      {
+        "id": "sub-dev-core",
+        "name": "Core Engine",
+        "order": 0
+      },
+      {
+        "id": "sub-dev-ui",
+        "name": "UI Design",
+        "order": 1
+      }
+    ],
+    "cat-mus": [
+      {
+        "id": "sub-mus-beat",
+        "name": "Arranging",
+        "order": 0
+      },
+      {
+        "id": "sub-mus-sd",
+        "name": "Sound Design",
+        "order": 1
+      }
+    ],
+    "cat-self": [
+      {
+        "id": "sub-self-train",
+        "name": "Fitness & Training",
+        "order": 0
+      },
+      {
+        "id": "sub-self-read",
+        "name": "Reading List",
+        "order": 1
+      }
+    ]
+  },
+  "selectedWeek": "2026-W21",
+  "dailyFocus": [],
+  "collapsedCategories": [],
+  "collapsedSubcategories": []
+}

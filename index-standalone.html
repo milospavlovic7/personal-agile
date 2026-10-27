@@ -1,0 +1,3500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Momentum — Personal Scrum Operating System</title>
+  
+  <!-- Modern Typography (Inter & Fira Code) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Core Script Dependencies (UMD builds, file:// compatible) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js" crossorigin></script>
+
+  <!-- Premium Graphite Design System Stylesheet -->
+  <style>
+    /* Reset & Core Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    :root {
+      /* Base Colors */
+      --bg-darkest: #08080a;
+      --bg-dark: #0f0f13;
+      --bg-card: #15151b;
+      --bg-header: rgba(15, 15, 19, 0.75);
+      --bg-active: #1d1d26;
+      
+      /* Borders */
+      --border-color: rgba(255, 255, 255, 0.06);
+      --border-hover: rgba(255, 255, 255, 0.12);
+      --border-focus: rgba(124, 58, 237, 0.5);
+      
+      /* Typography */
+      --text-primary: #f4f4f6;
+      --text-secondary: #9f9fa9;
+      --text-muted: #575765;
+      
+      /* Accents */
+      --accent-purple: #8b5cf6;
+      --accent-purple-glow: rgba(139, 92, 246, 0.15);
+      
+      /* Priority Tag Colors */
+      --pri-1: #ef4444;
+      --pri-2: #f59e0b;
+      --pri-3: #3b82f6;
+      --pri-4: #10b981;
+      
+      /* Effort Tag Colors */
+      --eff-xs: #64748b;
+      --eff-s: #22c55e;
+      --eff-m: #06b6d4;
+      --eff-l: #a855f7;
+      
+      /* Dimensions */
+      --header-height: 56px;
+      --sidebar-width: 260px;
+      --category-width: 640px;
+      --backlog-width: 320px;
+      
+      /* Transitions */
+      --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+      background-color: var(--bg-darkest);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* App Shell Grid */
+    #app-root {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: var(--header-height) 1fr;
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "header header"
+        "sidebar main";
+    }
+
+    /* Header Bar */
+    header {
+      grid-area: header;
+      background-color: var(--bg-header);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 100;
+      position: sticky;
+      top: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, var(--accent-purple), #ec4899);
+      border-radius: 4px;
+      display: inline-block;
+      position: relative;
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(to right, #ffffff, #a1a1aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .sprint-navigation {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 4px;
+    }
+
+    .sprint-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .sprint-nav-btn:hover {
+      background-color: var(--bg-active);
+      color: var(--text-primary);
+    }
+
+    .sprint-label-container {
+      position: relative;
+    }
+
+    .sprint-select {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 13px;
+      padding: 0 8px;
+      cursor: pointer;
+      font-family: inherit;
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      padding-right: 20px;
+    }
+
+    .sprint-select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .sprint-select-wrapper::after {
+      content: "";
+      position: absolute;
+      right: 6px;
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .autosave-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      transition: var(--transition-fast);
+    }
+
+    .autosave-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--text-muted);
+    }
+
+    .autosave-badge.saving {
+      color: var(--accent-purple);
+    }
+
+    .autosave-badge.saving .autosave-dot {
+      background-color: var(--accent-purple);
+      animation: pulse 1s infinite alternate;
+    }
+
+    .autosave-badge.saved {
+      color: #10b981;
+    }
+
+    .autosave-badge.saved .autosave-dot {
+      background-color: #10b981;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      100% { opacity: 1; }
+    }
+
+    .header-btn {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      transition: var(--transition-fast);
+    }
+
+    .header-btn:hover {
+      background-color: var(--bg-active);
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+    }
+
+    .header-btn.primary {
+      background-color: var(--accent-purple);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    .header-btn.primary:hover {
+      background-color: #7c3aed;
+      box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    }
+
+    /* Sidebar Navigation & Metrics */
+    aside {
+      grid-area: sidebar;
+      background-color: var(--bg-dark);
+      border-right: 1px solid var(--border-color);
+      width: var(--sidebar-width);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      z-index: 90;
+    }
+
+    .sidebar-section {
+      margin-bottom: 24px;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: justify;
+      gap: 6px;
+    }
+
+    /* Daily Focus List */
+    .daily-focus-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .daily-focus-item {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: var(--transition-fast);
+      cursor: pointer;
+    }
+
+    .daily-focus-item:hover {
+      border-color: var(--border-hover);
+      background-color: var(--bg-active);
+    }
+
+    .daily-focus-text {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-grow: 1;
+    }
+
+    .daily-focus-text.completed {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .daily-focus-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      transition: var(--transition-fast);
+    }
+
+    .daily-focus-btn:hover {
+      color: #ef4444;
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .daily-focus-empty {
+      border: 1px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    /* Statistics Widgets */
+    .stats-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stats-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: 'Fira Code', monospace;
+      color: var(--text-primary);
+    }
+
+    .stats-progress-container {
+      width: 100%;
+      height: 6px;
+      background-color: var(--bg-dark);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .stats-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-purple), #10b981);
+      border-radius: 3px;
+      transition: width var(--transition-normal);
+    }
+
+    .stats-categories {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .stats-cat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .stats-cat-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stats-cat-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    /* Keyboard Shortcuts Footer */
+    .sidebar-footer {
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .shortcut-key {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+      padding: 1px 4px;
+      font-family: 'Fira Code', monospace;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    /* Main Board Container */
+    main {
+      grid-area: main;
+      display: flex;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 16px 0 16px 16px;
+      gap: 16px;
+      align-items: stretch;
+      scroll-behavior: smooth;
+    }
+
+    /* Categories Horizontal Loop */
+    .category-section {
+      flex: 0 0 auto;
+      width: var(--category-width);
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: width var(--transition-normal), min-width var(--transition-normal);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .category-section.collapsed {
+      width: 50px;
+      min-width: 50px;
+    }
+
+    .category-header {
+      height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-fast);
+    }
+
+    .category-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--cat-accent, var(--accent-purple));
+    }
+
+    .category-header:hover {
+      background-color: var(--bg-card);
+    }
+
+    .category-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .category-accent-bar {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--cat-accent, var(--accent-purple));
+      box-shadow: 0 0 8px var(--cat-accent, var(--accent-purple));
+    }
+
+    .category-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .category-count {
+      background-color: var(--bg-active);
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 11px;
+      font-family: 'Fira Code', monospace;
+      color: var(--text-secondary);
+    }
+
+    .category-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .category-action-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-fast);
+    }
+
+    .category-action-btn:hover {
+      color: var(--text-primary);
+      background-color: var(--bg-active);
+    }
+
+    /* Collapsed Category Vertical Bar */
+    .category-section.collapsed .category-header {
+      height: 100%;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 16px 0;
+      gap: 16px;
+      border-bottom: none;
+    }
+
+    .category-section.collapsed .category-title-vertical {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      white-space: nowrap;
+      margin-top: 10px;
+    }
+
+    .category-section.collapsed .category-content-container {
+      display: none;
+    }
+
+    .category-content-container {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Subcategories Swimlanes */
+    .subcategory-swimlane {
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background-color: rgba(255, 255, 255, 0.01);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .subcategory-header {
+      background-color: var(--bg-card);
+      height: 32px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .subcategory-header:hover {
+      background-color: var(--bg-active);
+    }
+
+    .subcategory-header-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .subcategory-header-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .subcategory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      min-height: 120px;
+      transition: max-height var(--transition-normal);
+    }
+
+    .subcategory-swimlane.collapsed .subcategory-grid {
+      display: none;
+    }
+
+    .subcategory-swimlane.collapsed {
+      border-color: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Board Columns */
+    .board-column {
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      position: relative;
+    }
+
+    .board-column:last-child {
+      border-right: none;
+    }
+
+    .board-column-header {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .board-column-title-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .board-column-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .board-column.tasks .board-column-dot { background-color: var(--text-secondary); }
+    .board-column.in_progress .board-column-dot { background-color: var(--accent-purple); }
+    .board-column.done .board-column-dot { background-color: #10b981; }
+
+    /* Task Drag Outline Indicator */
+    .board-column.drag-over {
+      background-color: rgba(139, 92, 246, 0.02);
+      outline: 2px dashed rgba(139, 92, 246, 0.25);
+      outline-offset: -4px;
+      border-radius: 6px;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 80px;
+      flex-grow: 1;
+      padding-bottom: 24px;
+    }
+
+    /* Task Card Design */
+    .task-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      position: relative;
+      cursor: grab;
+      transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .task-card:active {
+      cursor: grabbing;
+    }
+
+    .task-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .task-card.pinned {
+      border-left: 3px solid var(--accent-purple);
+    }
+
+    .task-card.dragging {
+      opacity: 0.4;
+      transform: scale(0.96);
+    }
+
+    .task-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    .task-description {
+      font-size: 12px;
+      color: var(--text-primary);
+      font-weight: 500;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    .task-card-pins {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+    }
+
+    .task-card-pin-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: var(--transition-fast);
+    }
+
+    .task-card-pin-btn:hover {
+      color: var(--accent-purple);
+    }
+
+    .task-card-pin-btn.active {
+      color: var(--accent-purple);
+    }
+
+    .task-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .task-tags-left {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-pill {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .tag-pill.priority {
+      background-color: rgba(255, 255, 255, 0.04);
+    }
+
+    .tag-pill.priority-1 { color: var(--pri-1); background-color: rgba(239, 68, 68, 0.1); }
+    .tag-pill.priority-2 { color: var(--pri-2); background-color: rgba(245, 158, 11, 0.1); }
+    .tag-pill.priority-3 { color: var(--pri-3); background-color: rgba(59, 130, 246, 0.1); }
+    .tag-pill.priority-4 { color: var(--pri-4); background-color: rgba(16, 185, 129, 0.1); }
+
+    .tag-pill.effort {
+      font-family: 'Fira Code', monospace;
+    }
+
+    .tag-pill.effort-xs { color: var(--eff-xs); background-color: rgba(100, 116, 139, 0.1); }
+    .tag-pill.effort-s { color: var(--eff-s); background-color: rgba(34, 197, 94, 0.1); }
+    .tag-pill.effort-m { color: var(--eff-m); background-color: rgba(6, 182, 212, 0.1); }
+    .tag-pill.effort-l { color: var(--eff-l); background-color: rgba(168, 85, 247, 0.1); }
+
+    .task-subtask-summary {
+      font-size: 10px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .task-rollover-badge {
+      font-size: 9px;
+      color: var(--pri-2);
+      background-color: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+      border-radius: 4px;
+      padding: 0 4px;
+      font-weight: 500;
+    }
+
+    /* Quick Create Inputs */
+    .quick-create-container {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      right: 6px;
+    }
+
+    .quick-create-trigger {
+      width: 100%;
+      height: 24px;
+      border: 1px dashed var(--border-color);
+      border-radius: 4px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+
+    .quick-create-trigger:hover {
+      border-color: var(--border-hover);
+      color: var(--text-secondary);
+      background-color: rgba(255,255,255,0.01);
+    }
+
+    .quick-create-form {
+      display: flex;
+      gap: 4px;
+    }
+
+    .quick-create-input {
+      flex-grow: 1;
+      height: 26px;
+      background-color: var(--bg-darkest);
+      border: 1px solid var(--border-focus);
+      border-radius: 4px;
+      padding: 0 8px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+    }
+
+    /* Backlog Column Sidebar */
+    .backlog-section {
+      flex: 0 0 auto;
+      width: var(--backlog-width);
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      margin-right: 16px;
+    }
+
+    .backlog-header {
+      height: 48px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      position: relative;
+    }
+
+    .backlog-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: var(--text-muted);
+    }
+
+    .backlog-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .backlog-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-primary);
+    }
+
+    .backlog-search-container {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .backlog-search-row {
+      display: flex;
+      align-items: center;
+      background-color: var(--bg-darkest);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0 8px;
+      height: 30px;
+    }
+
+    .backlog-search-row:focus-within {
+      border-color: var(--border-focus);
+    }
+
+    .backlog-search-input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      width: 100%;
+      height: 100%;
+      outline: none;
+      font-size: 12px;
+      font-family: inherit;
+      padding-left: 6px;
+    }
+
+    .backlog-filters {
+      display: flex;
+      gap: 4px;
+    }
+
+    .backlog-filter-select {
+      flex-grow: 1;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      font-size: 10px;
+      padding: 4px;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .backlog-filter-select:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+    }
+
+    .backlog-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .backlog-content.drag-over {
+      background-color: rgba(255, 255, 255, 0.01);
+      outline: 2px dashed var(--border-hover);
+      outline-offset: -4px;
+      border-radius: 8px;
+    }
+
+    .backlog-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 40px;
+    }
+
+    .backlog-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px;
+      cursor: grab;
+      transition: var(--transition-fast);
+    }
+
+    .backlog-card:hover {
+      border-color: var(--border-hover);
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    .backlog-card-header {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Modal dialog styling */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      animation: fadeIn 0.2s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .modal-box {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-hover);
+      border-radius: 12px;
+      width: 500px;
+      max-width: 90vw;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      transform: scale(0.95);
+      animation: scaleUp 0.2s forwards;
+    }
+
+    @keyframes scaleUp {
+      to { transform: scale(1); }
+    }
+
+    .modal-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      transition: var(--transition-fast);
+    }
+
+    .modal-close-btn:hover {
+      background-color: var(--bg-active);
+      color: var(--text-primary);
+    }
+
+    .modal-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      background-color: var(--bg-darkest);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: var(--transition-fast);
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--border-focus);
+    }
+
+    .form-textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border-color);
+      background-color: var(--bg-card);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* Subtask checklist in editor */
+    .checklist-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .checklist-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checklist-checkbox {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      accent-color: var(--accent-purple);
+      cursor: pointer;
+    }
+
+    .checklist-text-input {
+      flex-grow: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      border-bottom: 1px solid transparent;
+      padding: 2px 0;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .checklist-text-input:focus {
+      border-bottom-color: var(--border-focus);
+    }
+
+    .checklist-text-input.done {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    /* Command Palette (Ctrl+K) Overlay */
+    .cmd-palette-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+      z-index: 2000;
+    }
+
+    .cmd-palette-box {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-hover);
+      border-radius: 12px;
+      width: 600px;
+      max-width: 90vw;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(139, 92, 246, 0.1);
+      overflow: hidden;
+    }
+
+    .cmd-palette-input-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      gap: 12px;
+    }
+
+    .cmd-palette-input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+      width: 100%;
+      outline: none;
+    }
+
+    .cmd-palette-results {
+      max-height: 350px;
+      overflow-y: auto;
+      padding: 8px;
+    }
+
+    .cmd-palette-item {
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--transition-fast);
+    }
+
+    .cmd-palette-item.selected {
+      background-color: var(--bg-active);
+    }
+
+    .cmd-palette-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cmd-palette-item-icon {
+      color: var(--text-secondary);
+    }
+
+    .cmd-palette-item.selected .cmd-palette-item-icon {
+      color: var(--accent-purple);
+    }
+
+    .cmd-palette-item-text {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .cmd-palette-item-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-left: 8px;
+    }
+
+    .cmd-palette-item-badge {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .cmd-palette-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* Category Add Horizontal button */
+    .add-category-board-btn {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 100px;
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: var(--transition-fast);
+    }
+
+    .add-category-board-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text-primary);
+      background-color: rgba(255, 255, 255, 0.01);
+    }
+
+    /* Color picker component */
+    .color-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .color-dot-option {
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: var(--transition-fast);
+    }
+
+    .color-dot-option.selected {
+      border-color: #ffffff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.4);
+    }
+
+    /* Toggle switches */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- React Mount Point -->
+  <div id="app-root"></div>
+
+  <!-- React & Babel Standalone Orchestration Script -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    // =========================================================================
+    // 1. DATE & WEEK CALCULATIONS
+    // =========================================================================
+    
+    function getWeekKey(date = new Date()) {
+      const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      const weekStr = weekNo < 10 ? '0' + weekNo : weekNo;
+      return `${d.getUTCFullYear()}-W${weekStr}`;
+    }
+
+    function getWeekRange(weekKeyString) {
+      const matches = weekKeyString.match(/^(\d{4})-W(\d{2})$/);
+      if (!matches) return { start: new Date(), end: new Date() };
+      const year = parseInt(matches[1], 10);
+      const week = parseInt(matches[2], 10);
+      
+      const simple = new Date(year, 0, 1 + (week - 1) * 7);
+      const dow = simple.getDay();
+      const ISOweekStart = simple;
+      if (dow <= 4) {
+        ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+      } else {
+        ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+      }
+      
+      const start = new Date(ISOweekStart);
+      const end = new Date(ISOweekStart);
+      end.setDate(start.getDate() + 6);
+      
+      return { start, end };
+    }
+
+    function formatWeekRange(weekKey) {
+      const { start, end } = getWeekRange(weekKey);
+      const options = { month: 'short', day: 'numeric' };
+      const startStr = start.toLocaleDateString('en-US', options);
+      const endStr = end.toLocaleDateString('en-US', options);
+      return `${startStr} → ${endStr}`;
+    }
+
+    function generateWeekDropdownOptions(currentWeekKey, range = 10) {
+      const options = [];
+      const currentMatches = currentWeekKey.match(/^(\d{4})-W(\d{2})$/);
+      if (!currentMatches) return [currentWeekKey];
+      const year = parseInt(currentMatches[1], 10);
+      const week = parseInt(currentMatches[2], 10);
+
+      // Simple list of weeks around the current week
+      for (let i = -range; i <= range; i++) {
+        let w = week + i;
+        let y = year;
+        if (w <= 0) {
+          y -= 1;
+          w = 52 + w; // Approximation
+        } else if (w > 52) {
+          y += 1;
+          w = w - 52;
+        }
+        const wStr = w < 10 ? '0' + w : w;
+        options.push(`${y}-W${wStr}`);
+      }
+      return options;
+    }
+
+    function shiftWeekKey(weekKeyString, delta) {
+      const matches = weekKeyString.match(/^(\d{4})-W(\d{2})$/);
+      if (!matches) return weekKeyString;
+      let year = parseInt(matches[1], 10);
+      let week = parseInt(matches[2], 10);
+      
+      week += delta;
+      if (week <= 0) {
+        year -= 1;
+        week = 52;
+      } else if (week > 52) {
+        year += 1;
+        week = 1;
+      }
+      const wStr = week < 10 ? '0' + week : week;
+      return `${year}-W${wStr}`;
+    }
+
+    // =========================================================================
+    // 2. LIGHTWEIGHT CUSTOM ZUSTAND-LIKE OBSERVER STORE
+    // =========================================================================
+    
+    const areEqual = (a, b) => {
+      if (a === b) return true;
+      if (a instanceof Set && b instanceof Set) {
+        if (a.size !== b.size) return false;
+        for (let item of a) {
+          if (!b.has(item)) return false;
+        }
+        return true;
+      }
+      if (Array.isArray(a) && Array.isArray(b)) {
+        if (a.length !== b.length) return false;
+        return a.every((v, i) => v === b[i]);
+      }
+      if (a && b && typeof a === 'object' && typeof b === 'object') {
+        try {
+          return JSON.stringify(a) === JSON.stringify(b);
+        } catch (e) {
+          return false;
+        }
+      }
+      return false;
+    };
+
+    const createStore = (initializer) => {
+      let state;
+      const listeners = new Set();
+      const getState = () => state;
+      const setState = (fnOrValue) => {
+        const nextState = typeof fnOrValue === 'function' ? fnOrValue(state) : fnOrValue;
+        state = { ...state, ...nextState };
+        listeners.forEach((l) => l(state));
+      };
+      const subscribe = (listener) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      };
+      state = initializer(setState, getState);
+      
+      const useStore = (selector = s => s) => {
+        const [slice, setSlice] = useState(() => selector(state));
+        const lastSelector = useRef(selector);
+        
+        useEffect(() => {
+          lastSelector.current = selector;
+        });
+
+        useEffect(() => {
+          const unsubscribe = subscribe((newState) => {
+            const nextSlice = lastSelector.current(newState);
+            setSlice(prev => {
+              if (areEqual(prev, nextSlice)) return prev;
+              return nextSlice;
+            });
+          });
+          return unsubscribe;
+        }, []);
+        
+        return slice;
+      };
+      
+      useStore.getState = getState;
+      useStore.setState = setState;
+      useStore.subscribe = subscribe;
+      return useStore;
+    };
+
+    // =========================================================================
+    // 3. STATS & CATEGORY METRICS GENERATION
+    // =========================================================================
+    
+    // Default system starter categories & tasks (used if local storage is blank)
+    const starterCategories = [
+      { id: "cat-dev", name: "Engineering", color: "#8b5cf6", order: 0 },
+      { id: "cat-mus", name: "Music Production", color: "#10b981", order: 1 },
+      { id: "cat-self", name: "Self-Refining", color: "#f59e0b", order: 2 }
+    ];
+
+    const starterSubcategories = {
+      "cat-dev": [
+        { id: "sub-dev-core", name: "Core Engine", order: 0 },
+        { id: "sub-dev-ui", name: "UI Design", order: 1 }
+      ],
+      "cat-mus": [
+        { id: "sub-mus-beat", name: "Arranging", order: 0 },
+        { id: "sub-mus-sd", name: "Sound Design", order: 1 }
+      ],
+      "cat-self": [
+        { id: "sub-self-train", name: "Fitness & Training", order: 0 },
+        { id: "sub-self-read", name: "Reading List", order: 1 }
+      ]
+    };
+
+    const generateStarterTasks = (currentWeekKey) => {
+      const prevWeek = shiftWeekKey(currentWeekKey, -1);
+      return [
+        // Completed Tasks in Past Sprint
+        {
+          id: "task-1",
+          description: "Initialize git repository & setup basic package structural folders",
+          categoryId: "cat-dev",
+          subcategoryId: "sub-dev-core",
+          sprintWeek: prevWeek,
+          status: "done",
+          priority: 3,
+          notes: "Basic setup complete. Ready to implement visual system layers.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        // Unfinished Past Task -> Carrying Over Automatically
+        {
+          id: "task-2",
+          description: "Refactor core observer store for file-less CORS compatibility",
+          categoryId: "cat-dev",
+          subcategoryId: "sub-dev-core",
+          sprintWeek: prevWeek, // Carries over because it is in_progress and week is in the past!
+          status: "in_progress",
+          priority: 1,
+          notes: "Need to make sure state binds cleanly using UMD modules without ESM issues on standard double-click runs.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "M",
+          subtasks: [
+            { id: "st-1", text: "Create local observer pattern", done: true },
+            { id: "st-2", text: "Map custom selector hook triggers", done: false }
+          ]
+        },
+        // Current Sprint Tasks
+        {
+          id: "task-3",
+          description: "Design glassy Matte Graphite layout layout grid system",
+          categoryId: "cat-dev",
+          subcategoryId: "sub-dev-ui",
+          sprintWeek: currentWeekKey,
+          status: "in_progress",
+          priority: 2,
+          notes: "Dark matte tones (#09090b / #15151b). Minimalistic aesthetic vibes inspired by Linear & Obsidian.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "L",
+          pinned: true
+        },
+        {
+          id: "task-4",
+          description: "Code dynamic inline task fast-capture fields (+ Enter to save)",
+          categoryId: "cat-dev",
+          subcategoryId: "sub-dev-ui",
+          sprintWeek: currentWeekKey,
+          status: "tasks",
+          priority: 3,
+          notes: "Quick add makes task flow frictionless.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "S"
+        },
+        {
+          id: "task-5",
+          description: "Generate 5 customized synth presets for future sci-fi ambient album",
+          categoryId: "cat-mus",
+          subcategoryId: "sub-mus-sd",
+          sprintWeek: currentWeekKey,
+          status: "in_progress",
+          priority: 2,
+          notes: "Using Vital synth. Focus on deep atmospheric pads and futuristic granular hits.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "M"
+        },
+        {
+          id: "task-6",
+          description: "Heavy legs day: squat training routine focus (5x5)",
+          categoryId: "cat-self",
+          subcategoryId: "sub-self-train",
+          sprintWeek: currentWeekKey,
+          status: "done",
+          priority: 3,
+          notes: "Hit target squat volume! Form was solid.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "S"
+        },
+        // Long-term Backlog Tasks
+        {
+          id: "task-b1",
+          description: "Investigate Figma mockups for next year's full procedural puzzle game",
+          categoryId: "cat-dev",
+          subcategoryId: "sub-dev-ui",
+          sprintWeek: null,
+          status: "backlog",
+          priority: 4,
+          notes: "Just rough sketching for now. Keep in backlog.",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "XL"
+        },
+        {
+          id: "task-b2",
+          description: "Read 'Atomic Habits' chapter on environmental design setups",
+          categoryId: "cat-self",
+          subcategoryId: "sub-self-read",
+          sprintWeek: null,
+          status: "backlog",
+          priority: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          effort: "XS"
+        }
+      ];
+    };
+
+    // =========================================================================
+    // 4. MAIN MOMENTUM CENTRAL ZUSTAND-LIKE STORE
+    // =========================================================================
+    
+    const LOCAL_STORAGE_KEY = "momentum-state-v1";
+
+    const getInitialState = () => {
+      const currentWeek = getWeekKey();
+      try {
+        const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.tasks && parsed.categories) {
+            // Restore successfully
+            return {
+              tasks: parsed.tasks,
+              categories: parsed.categories,
+              subcategories: parsed.subcategories || starterSubcategories,
+              selectedWeek: parsed.selectedWeek || currentWeek,
+              dailyFocus: parsed.dailyFocus || [],
+              collapsedCategories: new Set(parsed.collapsedCategories || []),
+              collapsedSubcategories: new Set(parsed.collapsedSubcategories || []),
+              searchQuery: "",
+              priorityFilter: "all",
+              effortFilter: "all",
+              commandPaletteOpen: false,
+              editingTask: null,
+              autosaveIndicator: "saved"
+            };
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load local storage state:", e);
+      }
+      
+      // Default fallback starter data
+      return {
+        tasks: generateStarterTasks(currentWeek),
+        categories: starterCategories,
+        subcategories: starterSubcategories,
+        selectedWeek: currentWeek,
+        dailyFocus: ["task-2", "task-3"],
+        collapsedCategories: new Set(),
+        collapsedSubcategories: new Set(),
+        searchQuery: "",
+        priorityFilter: "all",
+        effortFilter: "all",
+        commandPaletteOpen: false,
+        editingTask: null,
+        autosaveIndicator: "saved"
+      };
+    };
+
+    const useMomentumStore = createStore((set, get) => {
+      const triggerAutosave = () => {
+        set({ autosaveIndicator: "saving" });
+        setTimeout(() => {
+          try {
+            const state = get();
+            const dataToSave = {
+              tasks: state.tasks,
+              categories: state.categories,
+              subcategories: state.subcategories,
+              selectedWeek: state.selectedWeek,
+              dailyFocus: state.dailyFocus,
+              collapsedCategories: Array.from(state.collapsedCategories),
+              collapsedSubcategories: Array.from(state.collapsedSubcategories)
+            };
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+            set({ autosaveIndicator: "saved" });
+          } catch (err) {
+            console.error("Autosave write failed", err);
+            set({ autosaveIndicator: "error" });
+          }
+        }, 300);
+      };
+
+      const initialState = getInitialState();
+
+      return {
+        ...initialState,
+
+        // Week Actions
+        setSelectedWeek: (week) => {
+          set({ selectedWeek: week });
+          triggerAutosave();
+        },
+
+        // Category Actions
+        addCategory: (name, color) => {
+          const id = "cat-" + Date.now();
+          const order = get().categories.length;
+          const newCat = { id, name, color, order };
+          set(state => ({
+            categories: [...state.categories, newCat],
+            subcategories: {
+              ...state.subcategories,
+              [id]: [{ id: "sub-" + Date.now() + "-gen", name: "General", order: 0 }]
+            }
+          }));
+          triggerAutosave();
+        },
+
+        renameCategory: (id, name) => {
+          set(state => ({
+            categories: state.categories.map(c => c.id === id ? { ...c, name } : c)
+          }));
+          triggerAutosave();
+        },
+
+        deleteCategory: (id) => {
+          set(state => ({
+            categories: state.categories.filter(c => c.id !== id),
+            // Delete tasks associated with the category
+            tasks: state.tasks.filter(t => t.categoryId !== id)
+          }));
+          triggerAutosave();
+        },
+
+        toggleCollapseCategory: (id) => {
+          set(state => {
+            const next = new Set(state.collapsedCategories);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return { collapsedCategories: next };
+          });
+          triggerAutosave();
+        },
+
+        // Subcategory Actions
+        addSubcategory: (categoryId, name) => {
+          const id = "sub-" + Date.now();
+          const list = get().subcategories[categoryId] || [];
+          const newSub = { id, name, order: list.length };
+          set(state => ({
+            subcategories: {
+              ...state.subcategories,
+              [categoryId]: [...list, newSub]
+            }
+          }));
+          triggerAutosave();
+        },
+
+        renameSubcategory: (categoryId, subcategoryId, name) => {
+          const list = get().subcategories[categoryId] || [];
+          set(state => ({
+            subcategories: {
+              ...state.subcategories,
+              [categoryId]: list.map(s => s.id === subcategoryId ? { ...s, name } : s)
+            }
+          }));
+          triggerAutosave();
+        },
+
+        deleteSubcategory: (categoryId, subcategoryId) => {
+          const list = get().subcategories[categoryId] || [];
+          set(state => ({
+            subcategories: {
+              ...state.subcategories,
+              [categoryId]: list.filter(s => s.id !== subcategoryId)
+            },
+            // Move tasks in deleted subcategory to General / deleted
+            tasks: state.tasks.filter(t => t.subcategoryId !== subcategoryId)
+          }));
+          triggerAutosave();
+        },
+
+        toggleCollapseSubcategory: (id) => {
+          set(state => {
+            const next = new Set(state.collapsedSubcategories);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return { collapsedSubcategories: next };
+          });
+          triggerAutosave();
+        },
+
+        // Task Actions
+        addTask: (taskData) => {
+          const newTask = {
+            id: "task-" + Date.now(),
+            description: taskData.description,
+            categoryId: taskData.categoryId,
+            subcategoryId: taskData.subcategoryId || "General",
+            sprintWeek: taskData.sprintWeek,
+            status: taskData.status || "tasks",
+            priority: taskData.priority || null,
+            notes: taskData.notes || "",
+            effort: taskData.effort || null,
+            pinned: false,
+            subtasks: taskData.subtasks || [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+
+          set(state => ({
+            tasks: [...state.tasks, newTask]
+          }));
+          triggerAutosave();
+          return newTask;
+        },
+
+        updateTask: (id, updates) => {
+          set(state => {
+            const updated = state.tasks.map(t => {
+              if (t.id === id) {
+                // If moving into completed, handle specific logic if wanted
+                return {
+                  ...t,
+                  ...updates,
+                  updatedAt: new Date().toISOString()
+                };
+              }
+              return t;
+            });
+            return { tasks: updated };
+          });
+          triggerAutosave();
+        },
+
+        deleteTask: (id) => {
+          set(state => ({
+            tasks: state.tasks.filter(t => t.id !== id),
+            dailyFocus: state.dailyFocus.filter(fid => fid !== id)
+          }));
+          triggerAutosave();
+        },
+
+        moveTask: (id, nextStatus, nextCategoryId, nextSubcategoryId) => {
+          const currentWeek = get().selectedWeek;
+          set(state => {
+            const updated = state.tasks.map(t => {
+              if (t.id === id) {
+                let sprintWeek = t.sprintWeek;
+                
+                // Rules for sprint week scheduling
+                if (nextStatus === "backlog") {
+                  sprintWeek = null;
+                } else if (t.status === "backlog" && nextStatus !== "backlog") {
+                  // Dragged out of backlog into active sprint board
+                  sprintWeek = currentWeek;
+                } else if (t.sprintWeek && t.sprintWeek < currentWeek && nextStatus === "done") {
+                  // Unfinished carried-over task finally gets marked DONE
+                  // Bind it to the current week sprint where it got accomplished!
+                  sprintWeek = currentWeek;
+                }
+
+                return {
+                  ...t,
+                  status: nextStatus,
+                  categoryId: nextCategoryId || t.categoryId,
+                  subcategoryId: nextSubcategoryId || t.subcategoryId,
+                  sprintWeek,
+                  updatedAt: new Date().toISOString()
+                };
+              }
+              return t;
+            });
+            return { tasks: updated };
+          });
+          triggerAutosave();
+        },
+
+        togglePinTask: (id) => {
+          set(state => ({
+            tasks: state.tasks.map(t => t.id === id ? { ...t, pinned: !t.pinned } : t)
+          }));
+          triggerAutosave();
+        },
+
+        // Daily Focus Pinned Piles
+        toggleDailyFocus: (id) => {
+          set(state => {
+            const focus = [...state.dailyFocus];
+            const idx = focus.indexOf(id);
+            if (idx > -1) focus.splice(idx, 1);
+            else focus.push(id);
+            return { dailyFocus: focus };
+          });
+          triggerAutosave();
+        },
+
+        // Filter / Navigation state
+        setSearchQuery: (query) => set({ searchQuery: query }),
+        setPriorityFilter: (pri) => set({ priorityFilter: pri }),
+        setEffortFilter: (eff) => set({ effortFilter: eff }),
+        setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+        setEditingTask: (task) => set({ editingTask: task }),
+
+        // Manual Data loading and JSON exchange
+        importState: (jsonString) => {
+          try {
+            const parsed = JSON.parse(jsonString);
+            if (parsed.tasks && parsed.categories) {
+              set({
+                tasks: parsed.tasks,
+                categories: parsed.categories,
+                subcategories: parsed.subcategories || starterSubcategories,
+                selectedWeek: parsed.selectedWeek || getWeekKey(),
+                dailyFocus: parsed.dailyFocus || [],
+                collapsedCategories: new Set(parsed.collapsedCategories || []),
+                collapsedSubcategories: new Set(parsed.collapsedSubcategories || [])
+              });
+              triggerAutosave();
+              return true;
+            }
+          } catch (e) {
+            console.error("JSON Import Failed:", e);
+          }
+          return false;
+        }
+      };
+    });
+
+    // Try to check for momentum-data.json if loaded via a local HTTP server
+    // (This works on localhost but falls back gracefully on file://)
+    fetch("momentum-data.json")
+      .then(response => {
+        if (response.ok) return response.text();
+        throw new Error("Local json fetch failed or blocked");
+      })
+      .then(text => {
+        // Only load if local storage doesn't already have user logs
+        let hasLogs = false;
+        try {
+          hasLogs = !!localStorage.getItem(LOCAL_STORAGE_KEY);
+        } catch (e) {
+          console.warn("Autosave storage read blocked:", e);
+        }
+        if (!hasLogs) {
+          useMomentumStore.getState().importState(text);
+          console.log("Pre-loaded initial momentum-data.json database file!");
+        }
+      })
+      .catch(e => {
+        // Silent catch for CORS / file protocol security blocks
+      });
+
+    // =========================================================================
+    // 5. RICH INLINE GLYPH SVG COMPONENT
+    // =========================================================================
+    
+    function Icon({ name, className = "", size = 16, onClick }) {
+      const icons = {
+        chevronLeft: <path d="m15 18-6-6 6-6" />,
+        chevronRight: <path d="m9 18 6-6-6-6" />,
+        plus: <path d="M5 12h14M12 5v14" />,
+        check: <path d="M20 6 9 17l-5-5" />,
+        trash: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />,
+        pin: <path d="M12 2v8M5 10h14M19 10l-1.5 8h-11L5 10" />,
+        search: <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />,
+        close: <path d="M18 6 6 18M6 6l12 12" />,
+        settings: <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />,
+        calendar: <rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><path d="M16 2v4M8 2v4M3 10h18" />,
+        export: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />,
+        import: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+        focus: <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="4" />,
+        doubleChevron: <path d="m7 15 5 5 5-5M7 9l5-5 5 5" />,
+        terminal: <polyline points="4 17 10 11 4 5" /><line x1="12" x2="20" y1="19" y2="19" />,
+        folder: <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z" />
+      };
+
+      const path = icons[name] || <path d="M12 2v20M2 12h20" />;
+
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={size}
+          height={size}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`${className}`}
+          onClick={onClick}
+          style={onClick ? { cursor: 'pointer' } : undefined}
+        >
+          {path}
+        </svg>
+      );
+    }
+
+    // =========================================================================
+    // 6. MAIN APP COMPONENT
+    // =========================================================================
+    
+    function App() {
+      const selectedWeek = useMomentumStore(s => s.selectedWeek);
+      const categories = useMomentumStore(s => s.categories);
+      const subcategories = useMomentumStore(s => s.subcategories);
+      const tasks = useMomentumStore(s => s.tasks);
+      const dailyFocus = useMomentumStore(s => s.dailyFocus);
+      const search = useMomentumStore(s => s.searchQuery);
+      const priFilter = useMomentumStore(s => s.priorityFilter);
+      const effFilter = useMomentumStore(s => s.effortFilter);
+      
+      const collapsedCategories = useMomentumStore(s => s.collapsedCategories);
+      
+      const setCommandPaletteOpen = useMomentumStore(s => s.setCommandPaletteOpen);
+      const cmdOpen = useMomentumStore(s => s.commandPaletteOpen);
+      const editingTask = useMomentumStore(s => s.editingTask);
+      const setEditingTask = useMomentumStore(s => s.setEditingTask);
+
+      const [newCategoryModal, setNewCategoryModal] = useState(false);
+
+      // Keyboard Shortcut hooks
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            setCommandPaletteOpen(!cmdOpen);
+          }
+          if (e.key === 'Escape') {
+            setCommandPaletteOpen(false);
+            setEditingTask(null);
+            setNewCategoryModal(false);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [cmdOpen]);
+
+      // Calculate Rollover and week active cards
+      const activeSprintTasks = useMemo(() => {
+        return tasks.filter(t => {
+          if (t.status === "backlog") return false;
+          // Normal current week scheduling
+          if (t.sprintWeek === selectedWeek) return true;
+          // Rollover: Incomplete task scheduled in the PAST
+          if (t.sprintWeek && t.sprintWeek < selectedWeek && t.status !== "done") return true;
+          return false;
+        });
+      }, [tasks, selectedWeek]);
+
+      const backlogTasks = useMemo(() => {
+        return tasks.filter(t => t.status === "backlog");
+      }, [tasks]);
+
+      return (
+        <React.Fragment>
+          <Header onAddCategory={() => setNewCategoryModal(true)} />
+          <Sidebar activeSprintTasks={activeSprintTasks} />
+          
+          <main>
+            {[...categories]
+              .sort((a, b) => a.order - b.order)
+              .map(cat => (
+                <CategorySection
+                  key={cat.id}
+                  category={cat}
+                  subcategories={subcategories[cat.id] || []}
+                  activeSprintTasks={activeSprintTasks.filter(t => t.categoryId === cat.id)}
+                />
+              ))
+            }
+            
+            <button className="add-category-board-btn" onClick={() => setNewCategoryModal(true)}>
+              <Icon name="plus" size={18} />
+              <span>Add Category</span>
+            </button>
+            
+            <BacklogDrawer backlogTasks={backlogTasks} />
+          </main>
+
+          {/* Core Modals */}
+          {newCategoryModal && <AddCategoryModal onClose={() => setNewCategoryModal(false)} />}
+          {editingTask && <TaskEditorModal task={editingTask} onClose={() => setEditingTask(null)} />}
+          {cmdOpen && <CommandPalette />}
+        </React.Fragment>
+      );
+    }
+
+    // =========================================================================
+    // 7. HEADER COMPONENT
+    // =========================================================================
+    
+    function Header({ onAddCategory }) {
+      const selectedWeek = useMomentumStore(s => s.selectedWeek);
+      const setSelectedWeek = useMomentumStore(s => s.setSelectedWeek);
+      const autosave = useMomentumStore(s => s.autosaveIndicator);
+      const importState = useMomentumStore(s => s.importState);
+      const tasks = useMomentumStore(s => s.tasks);
+      const categories = useMomentumStore(s => s.categories);
+      const subcategories = useMomentumStore(s => s.subcategories);
+      
+      const fileInputRef = useRef(null);
+
+      const weekOptions = useMemo(() => {
+        return generateWeekDropdownOptions(selectedWeek, 8);
+      }, [selectedWeek]);
+
+      const handlePrevWeek = () => {
+        setSelectedWeek(shiftWeekKey(selectedWeek, -1));
+      };
+
+      const handleNextWeek = () => {
+        setSelectedWeek(shiftWeekKey(selectedWeek, 1));
+      };
+
+      // Export state to momentum-data.json
+      const handleExport = () => {
+        const fullState = {
+          tasks: useMomentumStore.getState().tasks,
+          categories: useMomentumStore.getState().categories,
+          subcategories: useMomentumStore.getState().subcategories,
+          selectedWeek: useMomentumStore.getState().selectedWeek,
+          dailyFocus: useMomentumStore.getState().dailyFocus,
+          collapsedCategories: Array.from(useMomentumStore.getState().collapsedCategories),
+          collapsedSubcategories: Array.from(useMomentumStore.getState().collapsedSubcategories)
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullState, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "momentum-data.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+      };
+
+      const handleImportClick = () => {
+        fileInputRef.current.click();
+      };
+
+      const handleFileImport = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const success = importState(evt.target.result);
+          if (success) {
+            alert("App state loaded successfully!");
+          } else {
+            alert("Invalid JSON format. Please load a valid momentum-data.json file.");
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      return (
+        <header>
+          <div className="header-left">
+            <div className="logo-container">
+              <span className="logo-icon"></span>
+              <span className="logo-text">MOMENTUM</span>
+            </div>
+            
+            <div className="sprint-navigation">
+              <button className="sprint-nav-btn" onClick={handlePrevWeek} title="Previous Sprint">
+                <Icon name="chevronLeft" size={14} />
+              </button>
+              
+              <div className="sprint-select-wrapper">
+                <select
+                  className="sprint-select"
+                  value={selectedWeek}
+                  onChange={(e) => setSelectedWeek(e.target.value)}
+                >
+                  {weekOptions.map(w => (
+                    <option key={w} value={w}>
+                      Week {w.split('-W')[1]} ({formatWeekRange(w)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button className="sprint-nav-btn" onClick={handleNextWeek} title="Next Sprint">
+                <Icon name="chevronRight" size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="header-right">
+            <div className={`autosave-badge ${autosave}`}>
+              <span className="autosave-dot"></span>
+              <span>{autosave === "saving" ? "Autosaving..." : autosave === "error" ? "Save Failed" : "Synced"}</span>
+            </div>
+
+            <button className="header-btn" onClick={handleExport} title="Save State to File">
+              <Icon name="export" size={12} />
+              <span>Export</span>
+            </button>
+
+            <button className="header-btn" onClick={handleImportClick} title="Load State from File">
+              <Icon name="import" size={12} />
+              <span>Import</span>
+            </button>
+            
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              accept=".json"
+              onChange={handleFileImport}
+            />
+
+            <button className="header-btn primary" onClick={onAddCategory}>
+              <Icon name="plus" size={12} />
+              <span>Add Category</span>
+            </button>
+          </div>
+        </header>
+      );
+    }
+
+    // =========================================================================
+    // 8. SIDEBAR COMPONENT
+    // =========================================================================
+    
+    function Sidebar({ activeSprintTasks }) {
+      const dailyFocusIds = useMomentumStore(s => s.dailyFocus);
+      const tasks = useMomentumStore(s => s.tasks);
+      const toggleDailyFocus = useMomentumStore(s => s.toggleDailyFocus);
+      const setCommandPaletteOpen = useMomentumStore(s => s.setCommandPaletteOpen);
+      const setEditingTask = useMomentumStore(s => s.setEditingTask);
+
+      // Extract details for daily focus tasks
+      const focusTasks = useMemo(() => {
+        return tasks.filter(t => dailyFocusIds.includes(t.id));
+      }, [tasks, dailyFocusIds]);
+
+      // Velocity/Stats Calculation
+      const stats = useMemo(() => {
+        const total = activeSprintTasks.length;
+        const completed = activeSprintTasks.filter(t => t.status === "done").length;
+        const inProgress = activeSprintTasks.filter(t => t.status === "in_progress").length;
+        const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return { total, completed, inProgress, percent };
+      }, [activeSprintTasks]);
+
+      // Category share mapping
+      const categoryShare = useMemo(() => {
+        const counts = {};
+        activeSprintTasks.forEach(t => {
+          counts[t.categoryId] = (counts[t.categoryId] || 0) + 1;
+        });
+        return counts;
+      }, [activeSprintTasks]);
+
+      const categories = useMomentumStore(s => s.categories);
+
+      return (
+        <aside>
+          <div className="sidebar-top">
+            
+            {/* Daily Focus Section */}
+            <div className="sidebar-section">
+              <div className="sidebar-section-title">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon name="focus" size={10} className="focus" style={{ color: 'var(--accent-purple)' }} />
+                  <span>Daily Focus</span>
+                </div>
+                <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{focusTasks.filter(t=>t.status==='done').length}/{focusTasks.length}</span>
+              </div>
+              
+              <div className="daily-focus-list">
+                {focusTasks.length > 0 ? (
+                  focusTasks.map(task => (
+                    <div
+                      key={task.id}
+                      className="daily-focus-item"
+                      onClick={() => setEditingTask(task)}
+                    >
+                      <span className={`daily-focus-text ${task.status === 'done' ? 'completed' : ''}`}>
+                        {task.description}
+                      </span>
+                      <button
+                        className="daily-focus-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleDailyFocus(task.id);
+                        }}
+                        title="Remove Focus"
+                      >
+                        <Icon name="close" size={10} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="daily-focus-empty">
+                    Double-click or edit a task card to pin it here. Keep your day structured.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Weekly Sprint Progress Card */}
+            <div className="sidebar-section">
+              <div className="sidebar-section-title">
+                <Icon name="terminal" size={10} />
+                <span>Sprint Velocity</span>
+              </div>
+              
+              <div className="stats-card">
+                <div className="stats-row">
+                  <span style={{ color: 'var(--text-secondary)' }}>Completion</span>
+                  <span className="stats-value">{stats.percent}%</span>
+                </div>
+                
+                <div className="stats-progress-container">
+                  <div className="stats-progress-bar" style={{ width: `${stats.percent}%` }}></div>
+                </div>
+
+                <div className="stats-row" style={{ fontSize: '11px', marginTop: '4px' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>
+                    Tasks: {stats.completed} done / {stats.total} total
+                  </span>
+                </div>
+
+                <div className="stats-categories">
+                  {categories.map(cat => {
+                    const cnt = categoryShare[cat.id] || 0;
+                    if (cnt === 0) return null;
+                    return (
+                      <div key={cat.id} className="stats-cat-item">
+                        <span className="stats-cat-name">
+                          <span className="stats-cat-dot" style={{ backgroundColor: cat.color }}></span>
+                          <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '140px' }}>
+                            {cat.name}
+                          </span>
+                        </span>
+                        <span style={{ fontFamily: 'Fira Code, monospace' }}>{cnt}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="sidebar-footer">
+            <div className="shortcut-row">
+              <span>Command Palette</span>
+              <span className="shortcut-key">Ctrl + K</span>
+            </div>
+            <div className="shortcut-row">
+              <span>Exit Modal</span>
+              <span className="shortcut-key">Esc</span>
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '6px', fontSize: '9px', color: 'var(--text-muted)' }}>
+              Momentum OS v1.0
+            </div>
+          </div>
+        </aside>
+      );
+    }
+
+    // =========================================================================
+    // 9. CATEGORY SECTION SYSTEM (Swimlanes layout)
+    // =========================================================================
+    
+    function CategorySection({ category, subcategories, activeSprintTasks }) {
+      const toggleCollapse = useMomentumStore(s => s.toggleCollapseCategory);
+      const isCollapsed = useMomentumStore(s => s.collapsedCategories).has(category.id);
+      const addSubcategory = useMomentumStore(s => s.addSubcategory);
+      const deleteCategory = useMomentumStore(s => s.deleteCategory);
+      
+      const [isAddingSub, setIsAddingSub] = useState(false);
+      const [subName, setSubName] = useState("");
+
+      const handleAddSub = (e) => {
+        e.preventDefault();
+        if (subName.trim()) {
+          addSubcategory(category.id, subName.trim());
+          setSubName("");
+          setIsAddingSub(false);
+        }
+      };
+
+      const handleDelete = (e) => {
+        e.stopPropagation();
+        if (confirm(`Are you sure you want to delete category "${category.name}" and all its tasks?`)) {
+          deleteCategory(category.id);
+        }
+      };
+
+      if (isCollapsed) {
+        return (
+          <div className="category-section collapsed" style={{ '--cat-accent': category.color }}>
+            <div className="category-header" onClick={() => toggleCollapse(category.id)}>
+              <span className="category-accent-bar"></span>
+              <div className="category-title-vertical">{category.name}</div>
+              <span className="category-count" style={{ marginTop: 'auto' }}>
+                {activeSprintTasks.length}
+              </span>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="category-section" style={{ '--cat-accent': category.color }}>
+          <div className="category-header" onClick={() => toggleCollapse(category.id)}>
+            <div className="category-header-left">
+              <span className="category-accent-bar"></span>
+              <span className="category-title">{category.name}</span>
+              <span className="category-count">{activeSprintTasks.length}</span>
+            </div>
+            
+            <div className="category-actions" onClick={e => e.stopPropagation()}>
+              <button
+                className="category-action-btn"
+                onClick={() => setIsAddingSub(!isAddingSub)}
+                title="Add Swimlane"
+              >
+                <Icon name="plus" size={12} />
+              </button>
+              <button
+                className="category-action-btn"
+                onClick={handleDelete}
+                title="Delete Category"
+              >
+                <Icon name="trash" size={12} />
+              </button>
+              <button
+                className="category-action-btn"
+                onClick={() => toggleCollapse(category.id)}
+                title="Collapse Column"
+              >
+                <Icon name="chevronLeft" size={12} />
+              </button>
+            </div>
+          </div>
+
+          <div className="category-content-container">
+            {isAddingSub && (
+              <form onSubmit={handleAddSub} style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                <input
+                  type="text"
+                  className="quick-create-input"
+                  placeholder="New Swimlane Name..."
+                  value={subName}
+                  onChange={e => setSubName(e.target.value)}
+                  autoFocus
+                />
+                <button type="submit" className="header-btn primary" style={{ height: '26px', padding: '0 8px' }}>Add</button>
+                <button type="button" className="header-btn" onClick={() => setIsAddingSub(false)} style={{ height: '26px', padding: '0 8px' }}>X</button>
+              </form>
+            )}
+
+            {subcategories.length > 0 ? (
+              [...subcategories]
+                .sort((a, b) => a.order - b.order)
+                .map(sub => (
+                  <SubcategoryRow
+                    key={sub.id}
+                    category={category}
+                    subcategory={sub}
+                    tasks={activeSprintTasks.filter(t => t.subcategoryId === sub.id)}
+                  />
+                ))
+            ) : (
+              <SubcategoryRow
+                key="default-gen"
+                category={category}
+                subcategory={{ id: "General", name: "General" }}
+                tasks={activeSprintTasks.filter(t => t.subcategoryId === "General" || !t.subcategoryId)}
+              />
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 10. SUBCATEGORY ROW SWIMLANES
+    // =========================================================================
+    
+    function SubcategoryRow({ category, subcategory, tasks }) {
+      const collapsedSubcategories = useMomentumStore(s => s.collapsedSubcategories);
+      const toggleCollapse = useMomentumStore(s => s.toggleCollapseSubcategory);
+      const deleteSub = useMomentumStore(s => s.deleteSubcategory);
+      const isCollapsed = collapsedSubcategories.has(subcategory.id);
+
+      const handleDelete = (e) => {
+        e.stopPropagation();
+        if (subcategory.id === "General") return;
+        if (confirm(`Are you sure you want to delete swimlane "${subcategory.name}"? Tasks inside will be archived.`)) {
+          deleteSub(category.id, subcategory.id);
+        }
+      };
+
+      return (
+        <div className={`subcategory-swimlane ${isCollapsed ? 'collapsed' : ''}`}>
+          <div className="subcategory-header" onClick={() => toggleCollapse(subcategory.id)}>
+            <div className="subcategory-header-left">
+              <button className="subcategory-header-btn">
+                <Icon
+                  name="doubleChevron"
+                  size={10}
+                  style={{
+                    transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                    transition: 'transform var(--transition-fast)'
+                  }}
+                />
+              </button>
+              <span>{subcategory.name}</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>({tasks.length})</span>
+            </div>
+
+            {subcategory.id !== "General" && (
+              <button
+                className="category-action-btn"
+                style={{ width: '18px', height: '18px' }}
+                onClick={handleDelete}
+                title="Delete Swimlane"
+              >
+                <Icon name="trash" size={10} />
+              </button>
+            )}
+          </div>
+
+          <div className="subcategory-grid">
+            <BoardColumn
+              status="tasks"
+              category={category}
+              subcategory={subcategory}
+              tasks={tasks.filter(t => t.status === "tasks")}
+            />
+            <BoardColumn
+              status="in_progress"
+              category={category}
+              subcategory={subcategory}
+              tasks={tasks.filter(t => t.status === "in_progress")}
+            />
+            <BoardColumn
+              status="done"
+              category={category}
+              subcategory={subcategory}
+              tasks={tasks.filter(t => t.status === "done")}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 11. WORKFLOW COLUMNS
+    // =========================================================================
+    
+    function BoardColumn({ status, category, subcategory, tasks }) {
+      const moveTask = useMomentumStore(s => s.moveTask);
+      const addTask = useMomentumStore(s => s.addTask);
+      const selectedWeek = useMomentumStore(s => s.selectedWeek);
+      
+      const [dragOver, setDragOver] = useState(false);
+      const [isAdding, setIsAdding] = useState(false);
+      const [taskDesc, setTaskDesc] = useState("");
+
+      // HTML5 Drag Handlers
+      const handleDragOver = (e) => {
+        e.preventDefault();
+      };
+
+      const handleDragEnter = (e) => {
+        setDragOver(true);
+      };
+
+      const handleDragLeave = () => {
+        setDragOver(false);
+      };
+
+      const handleDrop = (e) => {
+        setDragOver(false);
+        const taskId = e.dataTransfer.getData("text/plain");
+        if (taskId) {
+          moveTask(taskId, status, category.id, subcategory.id);
+        }
+      };
+
+      const handleQuickSubmit = (e) => {
+        e.preventDefault();
+        if (taskDesc.trim()) {
+          addTask({
+            description: taskDesc.trim(),
+            categoryId: category.id,
+            subcategoryId: subcategory.id,
+            sprintWeek: selectedWeek,
+            status: status
+          });
+          setTaskDesc("");
+          setIsAdding(false);
+        }
+      };
+
+      // Sorting: pinned first, then priority (null last), then creation date
+      const sortedTasks = useMemo(() => {
+        return [...tasks].sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          
+          const priA = a.priority === null ? 999 : a.priority;
+          const priB = b.priority === null ? 999 : b.priority;
+          if (priA !== priB) return priA - priB;
+          
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        });
+      }, [tasks]);
+
+      return (
+        <div
+          className={`board-column ${status} ${dragOver ? 'drag-over' : ''}`}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="board-column-header">
+            <div className="board-column-title-container">
+              <span className="board-column-dot"></span>
+              <span>{status === "tasks" ? "Todo" : status === "in_progress" ? "Active" : "Done"}</span>
+            </div>
+            <span style={{ fontSize: '10px', fontFamily: 'Fira Code' }}>{tasks.length}</span>
+          </div>
+
+          <div className="task-list">
+            {sortedTasks.map(t => (
+              <TaskCard key={t.id} task={t} />
+            ))}
+          </div>
+
+          <div className="quick-create-container">
+            {isAdding ? (
+              <form onSubmit={handleQuickSubmit} className="quick-create-form">
+                <input
+                  type="text"
+                  className="quick-create-input"
+                  placeholder="Task info..."
+                  value={taskDesc}
+                  onChange={e => setTaskDesc(e.target.value)}
+                  onBlur={() => {
+                    // Small delay to allow clicking submit if needed
+                    setTimeout(() => setIsAdding(false), 200);
+                  }}
+                  autoFocus
+                />
+              </form>
+            ) : (
+              <button className="quick-create-trigger" onClick={() => setIsAdding(true)}>
+                <Icon name="plus" size={10} />
+              </button>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 12. TASK CARD COMPONENT
+    // =========================================================================
+    
+    function TaskCard({ task }) {
+      const togglePinTask = useMomentumStore(s => s.togglePinTask);
+      const setEditingTask = useMomentumStore(s => s.setEditingTask);
+      const toggleDailyFocus = useMomentumStore(s => s.toggleDailyFocus);
+      const dailyFocusIds = useMomentumStore(s => s.dailyFocus);
+      const selectedWeek = useMomentumStore(s => s.selectedWeek);
+
+      const [isDragging, setIsDragging] = useState(false);
+
+      const handleDragStart = (e) => {
+        setIsDragging(true);
+        e.dataTransfer.setData("text/plain", task.id);
+        // Custom drag image could be set here
+      };
+
+      const handleDragEnd = () => {
+        setIsDragging(false);
+      };
+
+      // Rollover detection indicator
+      const isRollover = useMemo(() => {
+        return task.sprintWeek && task.sprintWeek < selectedWeek && task.status !== "done";
+      }, [task, selectedWeek]);
+
+      const subtasksDone = task.subtasks ? task.subtasks.filter(s => s.done).length : 0;
+      const subtasksTotal = task.subtasks ? task.subtasks.length : 0;
+
+      const isDailyFocus = dailyFocusIds.includes(task.id);
+
+      return (
+        <div
+          className={`task-card ${task.pinned ? 'pinned' : ''} ${isDragging ? 'dragging' : ''}`}
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDoubleClick={() => setEditingTask(task)}
+        >
+          <div className="task-card-header">
+            <span className="task-description">{task.description}</span>
+            <div className="task-card-pins">
+              <button
+                className={`task-card-pin-btn ${task.pinned ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePinTask(task.id);
+                }}
+                title={task.pinned ? "Unpin Task" : "Pin to Top"}
+              >
+                <Icon name="pin" size={10} />
+              </button>
+            </div>
+          </div>
+
+          <div className="task-card-footer">
+            <div className="task-tags-left">
+              {task.priority && (
+                <span className={`tag-pill priority priority-${task.priority}`}>
+                  P{task.priority}
+                </span>
+              )}
+              {task.effort && (
+                <span className={`tag-pill effort effort-${task.effort.toLowerCase()}`}>
+                  {task.effort}
+                </span>
+              )}
+              {isRollover && (
+                <span className="task-rollover-badge" title="Rolled over from past week">
+                  Rollover
+                </span>
+              )}
+            </div>
+
+            {subtasksTotal > 0 && (
+              <div className="task-subtask-summary">
+                <Icon name="check" size={9} />
+                <span>{subtasksDone}/{subtasksTotal}</span>
+              </div>
+            )}
+            
+            <button
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: isDailyFocus ? 'var(--accent-purple)' : 'var(--text-muted)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleDailyFocus(task.id);
+              }}
+              title={isDailyFocus ? "Pinned to Daily Focus" : "Pin to Daily Focus"}
+            >
+              <Icon name="focus" size={10} />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 13. BACKLOG PERMANENT DRAWER COLUMN
+    // =========================================================================
+    
+    function BacklogDrawer({ backlogTasks }) {
+      const moveTask = useMomentumStore(s => s.moveTask);
+      const addTask = useMomentumStore(s => s.addTask);
+      const categories = useMomentumStore(s => s.categories);
+      
+      const [dragOver, setDragOver] = useState(false);
+      const [backlogSearch, setBacklogSearch] = useState("");
+      const [catFilter, setCatFilter] = useState("all");
+      const [priSort, setPriSort] = useState("all");
+      const [quickDesc, setQuickDesc] = useState("");
+      const [selectedCatId, setSelectedCatId] = useState(categories[0]?.id || "General");
+
+      const handleDragOver = (e) => e.preventDefault();
+      
+      const handleDrop = (e) => {
+        setDragOver(false);
+        const taskId = e.dataTransfer.getData("text/plain");
+        if (taskId) {
+          moveTask(taskId, "backlog", null, null);
+        }
+      };
+
+      const handleQuickSubmit = (e) => {
+        e.preventDefault();
+        if (quickDesc.trim()) {
+          addTask({
+            description: quickDesc.trim(),
+            categoryId: selectedCatId,
+            subcategoryId: "General",
+            sprintWeek: null,
+            status: "backlog"
+          });
+          setQuickDesc("");
+        }
+      };
+
+      // Filtered Backlog calculation
+      const filteredBacklog = useMemo(() => {
+        let list = backlogTasks.filter(t => {
+          const matchSearch = t.description.toLowerCase().includes(backlogSearch.toLowerCase());
+          const matchCat = catFilter === "all" || t.categoryId === catFilter;
+          return matchSearch && matchCat;
+        });
+
+        // Sorting priority
+        if (priSort === "high") {
+          list.sort((a, b) => (a.priority || 99) - (b.priority || 99));
+        } else if (priSort === "date") {
+          list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        }
+        
+        return list;
+      }, [backlogTasks, backlogSearch, catFilter, priSort]);
+
+      return (
+        <div className="backlog-section">
+          <div className="backlog-header">
+            <div className="backlog-header-left">
+              <Icon name="folder" size={13} style={{ color: 'var(--text-secondary)' }} />
+              <span className="backlog-title">Backlog</span>
+            </div>
+            <span className="category-count">{backlogTasks.length}</span>
+          </div>
+
+          <div className="backlog-search-container">
+            <div className="backlog-search-row">
+              <Icon name="search" size={12} style={{ color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                className="backlog-search-input"
+                placeholder="Search backlog..."
+                value={backlogSearch}
+                onChange={e => setBacklogSearch(e.target.value)}
+              />
+            </div>
+
+            <div className="backlog-filters">
+              <select
+                className="backlog-filter-select"
+                value={catFilter}
+                onChange={e => setCatFilter(e.target.value)}
+              >
+                <option value="all">All Categories</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+
+              <select
+                className="backlog-filter-select"
+                value={priSort}
+                onChange={e => setPriSort(e.target.value)}
+              >
+                <option value="all">Natural Sort</option>
+                <option value="high">Priority (1 &rarr; 4)</option>
+                <option value="date">Newest Created</option>
+              </select>
+            </div>
+          </div>
+
+          <div
+            className={`backlog-content ${dragOver ? 'drag-over' : ''}`}
+            onDragOver={handleDragOver}
+            onDragEnter={() => setDragOver(true)}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={handleDrop}
+          >
+            <form onSubmit={handleQuickSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+              <input
+                type="text"
+                className="quick-create-input"
+                style={{ height: '30px' }}
+                placeholder="Backlog fast capture objective..."
+                value={quickDesc}
+                onChange={e => setQuickDesc(e.target.value)}
+              />
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <select
+                  className="backlog-filter-select"
+                  style={{ height: '24px' }}
+                  value={selectedCatId}
+                  onChange={e => setSelectedCatId(e.target.value)}
+                >
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+                <button type="submit" className="header-btn primary" style={{ height: '24px', flexGrow: 1, padding: 0, justifyContent: 'center' }}>
+                  Capture
+                </button>
+              </div>
+            </form>
+
+            <div className="backlog-cards-container">
+              {filteredBacklog.map(task => {
+                const cat = categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#666' };
+                return (
+                  <div
+                    key={task.id}
+                    className="task-card backlog-card"
+                    draggable
+                    onDragStart={e => {
+                      e.dataTransfer.setData("text/plain", task.id);
+                    }}
+                    onDoubleClick={() => useMomentumStore.getState().setEditingTask(task)}
+                  >
+                    <div className="backlog-card-header">
+                      <span style={{ color: cat.color, fontWeight: 600 }}>{cat.name}</span>
+                      {task.priority && <span>P{task.priority}</span>}
+                    </div>
+                    <span className="task-description">{task.description}</span>
+                  </div>
+                );
+              })}
+              
+              {filteredBacklog.length === 0 && (
+                <div className="daily-focus-empty" style={{ padding: '24px' }}>
+                  No backlog tasks fit these criteria. Drag tasks here to store them long-term.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 14. TASK DETAIL / CHECKLIST EDITOR MODAL
+    // =========================================================================
+    
+    function TaskEditorModal({ task, onClose }) {
+      const updateTask = useMomentumStore(s => s.updateTask);
+      const deleteTask = useMomentumStore(s => s.deleteTask);
+      const categories = useMomentumStore(s => s.categories);
+      const subcategories = useMomentumStore(s => s.subcategories);
+
+      const [desc, setDesc] = useState(task.description);
+      const [priority, setPriority] = useState(task.priority || "");
+      const [effort, setEffort] = useState(task.effort || "");
+      const [notes, setNotes] = useState(task.notes || "");
+      const [catId, setCatId] = useState(task.categoryId);
+      const [subCatId, setSubCatId] = useState(task.subcategoryId || "General");
+      
+      const [subtasks, setSubtasks] = useState(task.subtasks || []);
+      const [newSubtext, setNewSubtext] = useState("");
+
+      const handleSave = () => {
+        updateTask(task.id, {
+          description: desc,
+          priority: priority === "" ? null : parseInt(priority, 10),
+          effort: effort === "" ? null : effort,
+          notes: notes,
+          categoryId: catId,
+          subcategoryId: subCatId,
+          subtasks: subtasks
+        });
+        onClose();
+      };
+
+      const handleDelete = () => {
+        if (confirm("Delete this task permanently?")) {
+          deleteTask(task.id);
+          onClose();
+        }
+      };
+
+      const handleAddSub = (e) => {
+        e.preventDefault();
+        if (newSubtext.trim()) {
+          setSubtasks([...subtasks, { id: "st-" + Date.now(), text: newSubtext.trim(), done: false }]);
+          setNewSubtext("");
+        }
+      };
+
+      const handleToggleSub = (stId) => {
+        setSubtasks(subtasks.map(s => s.id === stId ? { ...s, done: !s.done } : s));
+      };
+
+      const handleRemoveSub = (stId) => {
+        setSubtasks(subtasks.filter(s => s.id !== stId));
+      };
+
+      const filteredSubcats = subcategories[catId] || [];
+
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">Edit Task Details</span>
+              <button className="modal-close-btn" onClick={onClose}>
+                <Icon name="close" size={14} />
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <div className="form-group">
+                <label className="form-label">Task Description</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={desc}
+                  onChange={e => setDesc(e.target.value)}
+                />
+              </div>
+
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label className="form-label">Category</label>
+                  <select
+                    className="form-select"
+                    value={catId}
+                    onChange={e => {
+                      setCatId(e.target.value);
+                      // Switch to first subcategory of new category or General
+                      const sublist = subcategories[e.target.value] || [];
+                      setSubCatId(sublist[0]?.id || "General");
+                    }}
+                  >
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Swimlane</label>
+                  <select
+                    className="form-select"
+                    value={subCatId}
+                    onChange={e => setSubCatId(e.target.value)}
+                  >
+                    {filteredSubcats.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    {filteredSubcats.length === 0 && <option value="General">General</option>}
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row-2">
+                <div className="form-group">
+                  <label className="form-label">Priority</label>
+                  <select className="form-select" value={priority} onChange={e => setPriority(e.target.value)}>
+                    <option value="">None</option>
+                    <option value="1">P1 (Critical)</option>
+                    <option value="2">P2 (High)</option>
+                    <option value="3">P3 (Medium)</option>
+                    <option value="4">P4 (Low)</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Effort Tag</label>
+                  <select className="form-select" value={effort} onChange={e => setEffort(e.target.value)}>
+                    <option value="">None</option>
+                    <option value="XS">XS (Tiny)</option>
+                    <option value="S">S (Small)</option>
+                    <option value="M">M (Medium)</option>
+                    <option value="L">L (Large)</option>
+                    <option value="XL">XL (Epic)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Notes</label>
+                <textarea
+                  className="form-textarea"
+                  placeholder="Elaborate details, links, ideas..."
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                />
+              </div>
+
+              {/* Checklist Section */}
+              <div className="form-group">
+                <label className="form-label">Subtask Checklist</label>
+                <div className="checklist-container">
+                  {subtasks.map(st => (
+                    <div key={st.id} className="checklist-row">
+                      <input
+                        type="checkbox"
+                        className="checklist-checkbox"
+                        checked={st.done}
+                        onChange={() => handleToggleSub(st.id)}
+                      />
+                      <span className={`checklist-text-input ${st.done ? 'done' : ''}`} style={{ flexGrow: 1 }}>
+                        {st.text}
+                      </span>
+                      <button
+                        className="category-action-btn"
+                        style={{ width: '18px', height: '18px' }}
+                        onClick={() => handleRemoveSub(st.id)}
+                      >
+                        <Icon name="close" size={10} />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  <form onSubmit={handleAddSub} style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                    <input
+                      type="text"
+                      className="quick-create-input"
+                      style={{ height: '28px' }}
+                      placeholder="Add subtask..."
+                      value={newSubtext}
+                      onChange={e => setNewSubtext(e.target.value)}
+                    />
+                    <button type="submit" className="header-btn primary" style={{ height: '28px', padding: '0 10px' }}>Add</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="header-btn" onClick={handleDelete} style={{ color: '#ef4444' }}>
+                <Icon name="trash" size={12} />
+                <span>Delete</span>
+              </button>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="header-btn" onClick={onClose}>Cancel</button>
+                <button className="header-btn primary" onClick={handleSave}>Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 15. ADD CATEGORY MODAL
+    // =========================================================================
+    
+    function AddCategoryModal({ onClose }) {
+      const addCategory = useMomentumStore(s => s.addCategory);
+      const [name, setName] = useState("");
+      const [color, setColor] = useState("#8b5cf6");
+
+      const colors = [
+        "#8b5cf6", // Purple
+        "#10b981", // Emerald
+        "#3b82f6", // Blue
+        "#f59e0b", // Amber
+        "#f43f5e", // Rose
+        "#ec4899", // Pink
+        "#06b6d4", // Cyan
+        "#84cc16", // Lime
+        "#e11d48", // Crimson
+        "#64748b"  // Slate
+      ];
+
+      const handleSave = () => {
+        if (name.trim()) {
+          addCategory(name.trim(), color);
+          onClose();
+        }
+      };
+
+      return (
+        <div className="modal-backdrop" onClick={onClose}>
+          <div className="modal-box" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <span className="modal-title">Create New Category</span>
+              <button className="modal-close-btn" onClick={onClose}>
+                <Icon name="close" size={14} />
+              </button>
+            </div>
+
+            <div className="modal-content">
+              <div className="form-group">
+                <label className="form-label">Category Name</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Music Production, Training, Software..."
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Accent Theme Color</label>
+                <div className="color-picker-grid">
+                  {colors.map(col => (
+                    <div
+                      key={col}
+                      className={`color-dot-option ${color === col ? 'selected' : ''}`}
+                      style={{ backgroundColor: col }}
+                      onClick={() => setColor(col)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ justifyContent: 'flex-end', gap: '8px' }}>
+              <button className="header-btn" onClick={onClose}>Cancel</button>
+              <button className="header-btn primary" onClick={handleSave}>Create Category</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // =========================================================================
+    // 16. FUZZY COMMAND PALETTE (Ctrl+K)
+    // =========================================================================
+    
+    function CommandPalette() {
+      const setOpen = useMomentumStore(s => s.setCommandPaletteOpen);
+      const tasks = useMomentumStore(s => s.tasks);
+      const categories = useMomentumStore(s => s.categories);
+      const selectedWeek = useMomentumStore(s => s.selectedWeek);
+      const setSelectedWeek = useMomentumStore(s => s.setSelectedWeek);
+      const setEditingTask = useMomentumStore(s => s.setEditingTask);
+      
+      const [query, setQuery] = useState("");
+      const [selectedIndex, setSelectedIndex] = useState(0);
+
+      // Actions / searchable indexes
+      const commandItems = useMemo(() => {
+        const items = [];
+
+        // Tasks Search
+        tasks.forEach(t => {
+          items.push({
+            type: "task",
+            title: t.description,
+            subtitle: t.status === "backlog" ? "Backlog" : `Week ${t.sprintWeek?.split('-W')[1]}`,
+            badge: t.status.toUpperCase(),
+            action: () => {
+              setEditingTask(t);
+              setOpen(false);
+            }
+          });
+        });
+
+        // Categories jumps
+        categories.forEach(c => {
+          items.push({
+            type: "category",
+            title: `Jump to Category: ${c.name}`,
+            subtitle: "View horizontal category board",
+            badge: "BOARD",
+            action: () => {
+              // Smooth scroll to category
+              const sections = document.querySelectorAll('.category-section');
+              sections.forEach(sec => {
+                if (sec.textContent.includes(c.name)) {
+                  sec.scrollIntoView({ behavior: 'smooth', inline: 'start' });
+                }
+              });
+              setOpen(false);
+            }
+          });
+        });
+
+        // Navigation Commands
+        items.push({
+          type: "action",
+          title: "Go to Current Week Sprint",
+          subtitle: "Jump to today's week",
+          badge: "NAV",
+          action: () => {
+            setSelectedWeek(getWeekKey());
+            setOpen(false);
+          }
+        });
+
+        items.push({
+          type: "action",
+          title: "Next Week Sprint",
+          subtitle: "Step week forward",
+          badge: "NAV",
+          action: () => {
+            setSelectedWeek(shiftWeekKey(selectedWeek, 1));
+            setOpen(false);
+          }
+        });
+
+        items.push({
+          type: "action",
+          title: "Previous Week Sprint",
+          subtitle: "Step week backward",
+          badge: "NAV",
+          action: () => {
+            setSelectedWeek(shiftWeekKey(selectedWeek, -1));
+            setOpen(false);
+          }
+        });
+
+        return items;
+      }, [tasks, categories, selectedWeek]);
+
+      const filteredItems = useMemo(() => {
+        if (!query.trim()) return commandItems.slice(0, 8); // Top default actions
+        return commandItems.filter(item => 
+          item.title.toLowerCase().includes(query.toLowerCase()) ||
+          item.subtitle.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 10);
+      }, [commandItems, query]);
+
+      useEffect(() => {
+        setSelectedIndex(0);
+      }, [query]);
+
+      // Navigation in command palette
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev + 1) % filteredItems.length);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex(prev => (prev - 1 + filteredItems.length) % filteredItems.length);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (filteredItems[selectedIndex]) {
+              filteredItems[selectedIndex].action();
+            }
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, [filteredItems, selectedIndex]);
+
+      return (
+        <div className="cmd-palette-backdrop" onClick={() => setOpen(false)}>
+          <div className="cmd-palette-box" onClick={e => e.stopPropagation()}>
+            <div className="cmd-palette-input-row">
+              <Icon name="search" size={16} style={{ color: 'var(--text-secondary)' }} />
+              <input
+                type="text"
+                className="cmd-palette-input"
+                placeholder="Fuzzy search tasks, categories, navigation commands..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="cmd-palette-results">
+              {filteredItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`cmd-palette-item ${idx === selectedIndex ? 'selected' : ''}`}
+                  onClick={item.action}
+                  onMouseEnter={() => setSelectedIndex(idx)}
+                >
+                  <div className="cmd-palette-item-left">
+                    <Icon
+                      name={item.type === "task" ? "check" : item.type === "category" ? "folder" : "terminal"}
+                      size={12}
+                      className="cmd-palette-item-icon"
+                    />
+                    <div>
+                      <span className="cmd-palette-item-text">{item.title}</span>
+                      <span className="cmd-palette-item-subtitle">{item.subtitle}</span>
+                    </div>
+                  </div>
+                  <span className="cmd-palette-item-badge">{item.badge}</span>
+                </div>
+              ))}
+
+              {filteredItems.length === 0 && (
+                <div className="cmd-palette-empty">
+                  No matching command or task found. Try searching another objective.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render application!
+    const container = document.getElementById('app-root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
+
+  </script>
+</body>
+</html>
